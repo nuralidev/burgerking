@@ -1,5 +1,7 @@
 const TelegramBot = require("node-telegram-bot-api");
-const token = "7514571859:AAE2KcPziMYSvlscSD7eRehcLuADbAfOSTY";
+// const token = "7514571859:AAE2KcPziMYSvlscSD7eRehcLuADbAfOSTY";
+require('dotenv').config()
+const token = process.env.Token
 const bot = new TelegramBot(token, { polling: true });
 const moment = require("moment");
 
@@ -8,7 +10,6 @@ let nextid=null
 async function test() {
   await axios.get("http://localhost:3000/nextId/1").then((response)=>{
     nextid=response.data.testId
-   
     });
 }
 test()
@@ -17,12 +18,9 @@ async function nextidfetch(){
   nextid++
  await axios.patch("http://localhost:3000/nextId/1",`{
     "testId": ${nextid}
-}`).then((response)=>{
-  console.log("Ugurla deyisdirildi")
- }).catch(()=>{
+}`).catch(()=>{
   console.log("Error")
- });
- console.log(nextid)
+ })
 }
 
 
