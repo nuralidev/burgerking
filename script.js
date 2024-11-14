@@ -1,12 +1,41 @@
 const TelegramBot = require("node-telegram-bot-api");
-const token = "7918774506:AAE9V_19-_QZo_9bD1XRS5zGt4R6g-NTALM";
+const token = "7514571859:AAE2KcPziMYSvlscSD7eRehcLuADbAfOSTY";
 const bot = new TelegramBot(token, { polling: true });
 const moment = require("moment");
 
+const { default: axios } = require("axios");
+let nextid=null
+async function test() {
+  await axios.get("http://localhost:3000/nextId/1").then((response)=>{
+    nextid=response.data.testId
+   
+    });
+}
+test()
+async function nextidfetch(){
+
+  nextid++
+ await axios.patch("http://localhost:3000/nextId/1",`{
+    "testId": ${nextid}
+}`).then((response)=>{
+  console.log("Ugurla deyisdirildi")
+ }).catch(()=>{
+  console.log("Error")
+ });
+ console.log(nextid)
+}
+
 
 // Sadə məlumat bazası kimi istifadə etmək üçün sifarişləri saxlayan obyekt
-let orders = {};
-
+let orders= {};
+// Burada musteriden gelen cavab data.js faylinda saxlanilir..
+async function fetchOrder(orders,customers) {
+  await axios.post("http://localhost:3000/orders",orders);
+  await axios.get(`http://localhost:3000/customers/${customers.id}`).catch(()=>{
+    axios.post("http://localhost:3000/customers",customers);
+  })
+  
+}
 // Müştəridən sifariş nömrəsi qəbul edən funksiya
 bot.on("message", (msg) => {
   const chatId = msg.chat.id;
@@ -17,30 +46,39 @@ bot.on("message", (msg) => {
       `Salam ${msg.chat.first_name}\n Botumuza xos Geldin Sifaris nomresini bize gondermekle sifarisini izleye bilersen`
     );
   }
+  nextidfetch()
   if (orderNumber === "/yenile") {
     updateOrderStatus("266");
   }
   if (!isNaN(orderNumber)) {
+
     // Əgər nömrədirsə
-    orders[chatId] = {
-      orderNumber:orderNumber,
-      status: "Gözləyir",
-      userName: msg.chat.first_name,
-      date:moment
-      .unix(msg.date)
-      .format("YYYY-MM-DD"),
-    };
+    orders= 
+      {
+        id:`${ nextid}`,
+        customerId: `${chatId}`,
+        orderNumber: orderNumber,
+        status:"Gozleyir",
+        date: moment
+        .unix(msg.date)
+        .format("YYYY-MM-DD"),
+      }
+      customers={
+        id:`${ chatId}`,
+        name: msg.chat.first_name,
+      }
     bot.sendMessage(
       chatId,
       `Sifariş nömrəniz ${orderNumber} qəbul edildi. Hazır olduqda bildiriş alacaqsınız.`
     );
-    console.log(orders[chatId]);
+    bot.sendMessage(-1002397682110,`\`Sifariş İD-->${orders.id}\nMüştəri Nömrəsi-->${orders.customerId}\nSifariş Nönrəsi-->${orders.orderNumber}\nStatus-->${orders.status}\nTarix-->${orders.date}\``,{parse_mode:"Markdown"});
+    fetchOrder(orders,customers)
   } else {
     bot.sendMessage(chatId, "Xahiş edirik, yalnız sifariş nömrənizi göndərin.");
   }
 });
 function updateOrderStatus(orderNumber) {
-  const order = orders[orderNumber];
+  const order = costumers[orderNumber];
 
   if (order && order.status === "Gözləyir") {
     order.status = "Hazır";

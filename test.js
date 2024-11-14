@@ -1,10 +1,8 @@
-import axios, { Axios } from "axios";
-async function fetchOrder() {
-const reply=await  axios.post('http://localhost:3000/orders')
-    console.log(reply.data)
-}
-async function fetchOrder() {
-    const reply=await  axios.post('http://localhost:3000/orders')
-        console.log(reply.data)
-    }
-fetchOrder()
+let test={
+    "id": 1,
+    "userId": "123456789",
+    "orderNumber": "ORD12345",
+    "status": "pending",
+    "date": "2024-11-12"
+  }
+  console.log(test.id)
